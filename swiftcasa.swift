@@ -5,6 +5,7 @@
 import io;
 import python;
 import unix;
+import string;
 
 app (file o) noop()
 {
@@ -15,6 +16,17 @@ app (file o) cpr(file i)
 {
   "cp" "-r" i o;
 }
+
+(string o) python_filelist(file i[])
+{
+  string x[];
+  foreach v,dx in i
+  {
+    x[dx]="'"+filename(v)+"'";
+  }
+  o=sprintf("[%s]", join(x, ", "));
+}
+
 
 (file vis) casa_importuvfits(file uv)
 {
@@ -29,44 +41,45 @@ app (file o) cpr(file i)
   // vis has to be filled before calling the CASA task. STC does not seem
   // to pick this up
   wait(vis) {
-    ovis=vis;
     python_persist("import casa; casa.flagdata('%s', flagbackup=True, mode='%s', antenna='%s', spw='%s', autocorr=bool(%b)); " %
 		   (filename(ovis), mode, antenna, spw, autocorr));
+    ovis=vis;
   }
 }
 
 (file ovis) casa_ft(file vis, file complist, boolean usescratch=true)
 {
   wait(vis) {
-    ovis=vis;
     python_persist("import casa; casa.ft('%s', complist='%s', usescratch=bool(%b));" %
 		   (filename(ovis), filename(complist), usescratch));
+    ovis=vis;
   }
 }
 
-/* Basic gaincal,
-   no support yet for caltables
+/* Basic gaincal
 */
 (file ocal) casa_gaincal(file vis, file gaintable[],
 			 string gaintype="", string solint="",
 			 string refant="", float minsnr=1.0,
-			 string spw="" )
+			 string spw="", string calmode="" )
 {
-  ocal=noop();
   wait(vis) {
     wait(gaintable) {
     python_persist("""
 import os; os.remove('%s');
 import casa;
 casa.gaincal('%s', caltable='%s',
+             gaintable=%s,
              gaintype='%s', solint='%s', refant='%s',
-             minsnr=%f, spw='%s');
+             minsnr=%f, spw='%s', calmode='%s');
 """ %
 		   (filename(ocal),
 		    filename(vis), filename(ocal),
+		    python_filelist(gaintable),
 		    gaintype, solint, refant,
-		    minsnr, spw
+		    minsnr, spw, calmode
 		    ));
+      ocal=noop();
     }
   }
 }
