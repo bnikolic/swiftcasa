@@ -23,14 +23,38 @@ app (file o) cpr(file i)
 		 (filename(vis), filename(uv), filename(vis)));
 }
 
-(file ovis) casa_flagdata(file vis, string mode, string antenna, string spw="")
+(file ovis) casa_flagdata(file vis, string mode="", string antenna="", string spw="",
+      	    		  boolean autocorr=false)
 {
-  // vis has to be filled before calling the task. STC does not seem
+  // vis has to be filled before calling the CASA task. STC does not seem
   // to pick this up
   wait(vis) {
     ovis=vis;    
-    python_persist("import casa; casa.flagdata('%s', flagbackup=True, mode='%s', antenna='%s', spw='%s'); " %
-		   (filename(ovis), mode, antenna, spw));
+    python_persist("import casa; casa.flagdata('%s', flagbackup=True, mode='%s', antenna='%s', spw='%s', autocorr=bool(%b)); " %
+		   (filename(ovis), mode, antenna, spw, autocorr));
   }
+}
+
+/* Create a component list with a single component, e.g., for use in
+   initialising the calibration process
+ */
+(file omodel) mkinitmodel(string direction, float flux, string shape="point", string fluxunit="Jy")
+{
+  omodel=noop();
+  python_persist("""
+f='%s';
+import os;
+if(os.path.exists(f)):
+   os.remove(f)
+import casac;
+cl=casac.casac.componentlist();
+cl.addcomponent(flux=%f,
+                fluxunit='%s',
+                shape='%s',
+                dir='%s')
+cl.rename('%s')
+cl.close()
+""" %
+		 (filename(omodel), flux, fluxunit, shape, direction, filename(omodel)));
 }
 
