@@ -30,9 +30,11 @@ app (file o) cpr(file i)
 
 (file vis) casa_importuvfits(file uv)
 {
-  vis=noop();
-  python_persist("import os; os.remove('%s'); import casa; casa.importuvfits('%s', '%s'); " %
-		 (filename(vis), filename(uv), filename(vis)));
+  wait(uv) {
+    python_persist("import os; os.remove('%s'); import casa; casa.importuvfits('%s', '%s'); " %
+		   (filename(vis), filename(uv), filename(vis)));
+    vis=noop();
+  }
 }
 
 (file ovis) casa_flagdata(file vis, string mode="", string antenna="", string spw="",
