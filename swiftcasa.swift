@@ -12,6 +12,11 @@ app (file o) noop()
   "true" o;
 }
 
+app (file o) noop2(string x)
+{
+  "true" o x;
+}
+
 app (file o) cpr(file i)
 {
   "cp" "-r" i o;
@@ -31,20 +36,19 @@ app (file o) cpr(file i)
 (file vis) casa_importuvfits(file uv)
 {
   wait(uv) {
-    python_persist("import os; os.remove('%s'); import casa; casa.importuvfits('%s', '%s'); " %
-		   (filename(vis), filename(uv), filename(vis)));
-    vis=noop();
+    vis=noop2(python_persist("import os; os.remove('%s'); import casa; casa.importuvfits('%s', '%s'); " %
+                            (filename(vis), filename(uv), filename(vis))));
   }
 }
 
 (file ovis) casa_flagdata(file vis, string mode="", string antenna="", string spw="",
-      	    		  boolean autocorr=false)
+                          boolean autocorr=false)
 {
   // vis has to be filled before calling the CASA task. STC does not seem
   // to pick this up
   wait(vis) {
     python_persist("import casa; casa.flagdata('%s', flagbackup=True, mode='%s', antenna='%s', spw='%s', autocorr=bool(%b)); " %
-		   (filename(ovis), mode, antenna, spw, autocorr));
+                         (filename(vis), mode, antenna, spw, autocorr))=>
     ovis=vis;
   }
 }
@@ -53,7 +57,7 @@ app (file o) cpr(file i)
 {
   wait(vis) {
     python_persist("import casa; casa.ft('%s', complist='%s', usescratch=bool(%b));" %
-		   (filename(ovis), filename(complist), usescratch));
+                         (filename(vis), filename(complist), usescratch))=>
     ovis=vis;
   }
 }
@@ -61,13 +65,13 @@ app (file o) cpr(file i)
 /* Basic gaincal
 */
 (file ocal) casa_gaincal(file vis, file gaintable[],
-			 string gaintype="", string solint="",
-			 string refant="", float minsnr=1.0,
-			 string spw="", string calmode="" )
+                         string gaintype="", string solint="",
+                         string refant="", float minsnr=1.0,
+                         string spw="", string calmode="" )
 {
   wait(vis) {
     wait(gaintable) {
-    python_persist("""
+      ocal=noop2(python_persist("""
 import os; os.remove('%s');
 import casa;
 casa.gaincal('%s', caltable='%s',
@@ -75,13 +79,28 @@ casa.gaincal('%s', caltable='%s',
              gaintype='%s', solint='%s', refant='%s',
              minsnr=%f, spw='%s', calmode='%s');
 """ %
-		   (filename(ocal),
-		    filename(vis), filename(ocal),
-		    python_filelist(gaintable),
-		    gaintype, solint, refant,
-		    minsnr, spw, calmode
-		    ));
-      ocal=noop();
+                   (filename(ocal),
+                    filename(vis), filename(ocal),
+                    python_filelist(gaintable),
+                    gaintype, solint, refant,
+                    minsnr, spw, calmode
+                    )));
+    }
+  }
+}
+
+(file ovis) casa_applycal(file vis, file gaintable[])
+{
+  wait(vis) {
+    wait deep (gaintable) {
+      python_persist("""
+import casa;
+casa.applycal('%s',
+             gaintable=%s);
+""" %
+                   (filename(vis),
+                    python_filelist(gaintable))) =>
+    ovis=vis;
     }
   }
 }
@@ -91,7 +110,7 @@ casa.gaincal('%s', caltable='%s',
  */
 (file omodel) mkinitmodel(string direction, float flux, string shape="point", string fluxunit="Jy")
 {
-  omodel=noop();
+  omodel=noop2(
   python_persist("""
 f='%s';
 import os; import shutil;
@@ -109,6 +128,6 @@ cl.addcomponent(flux=%f,
 cl.rename('%s')
 cl.close()
 """ %
-		 (filename(omodel), flux, fluxunit, shape, direction, filename(omodel)));
+                 (filename(omodel), flux, fluxunit, shape, direction, filename(omodel))));
 }
 
