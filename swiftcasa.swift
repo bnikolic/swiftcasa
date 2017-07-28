@@ -117,6 +117,48 @@ casa.split('%s', '%s', datacolumn='%s', spw='%s');
   }
 }
 
+/* CLEAN has multiple outputs (restored image, clean comps, etc) hence
+   the output is to a directory 
+*/
+(file oimgdir) casa_clean(file vis, int niter,
+			  int imsize[],
+			  string cell,
+			  string spw,
+			  string mask,
+			  string weighting="briggs",
+			  float robust=0,
+			  string mode="mfs",
+			  int nterms=1)
+{
+  wait(vis) {
+  oimgdir=noop2(
+python_persist("""
+f='%s';
+import os; import shutil;
+if(os.path.exists(f)):
+   if (os.path.isdir(f)):
+      shutil.rmtree(f)
+   else:
+      os.remove(f)
+os.mkdir(f)
+import casa
+casa.clean(vis='%s', imagename='%s/img', niter=%i,
+           weighting='%s', robust=%f,
+           imsize=[%i,%i],
+           cell=['%s'],
+           mode='%s',
+           nterms=%i,
+           spw='%s',
+           mask='%s');
+"""%
+   (filename(oimgdir),
+    filename(vis),
+    filename(oimgdir),
+    niter, weighting, robust, imsize[0], imsize[1],
+    cell, mode, nterms, spw, mask)));
+
+}}
+
 /* Create a component list with a single component, e.g., for use in
    initialising the calibration process
  */
