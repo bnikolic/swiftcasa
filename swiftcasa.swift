@@ -105,6 +105,18 @@ casa.applycal('%s',
   }
 }
 
+(file ovis) casa_split(file vis, string datacolumn="corrected", string spw="")
+{
+  wait(vis) {
+    ovis=noop2(python_persist("""
+import os; os.remove('%s');
+import casa;
+casa.split('%s', '%s', datacolumn='%s', spw='%s');
+""" % (filename(ovis), filename(vis),
+       filename(ovis), datacolumn, spw)));
+  }
+}
+
 /* Create a component list with a single component, e.g., for use in
    initialising the calibration process
  */
