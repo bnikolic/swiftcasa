@@ -55,7 +55,7 @@ app (file o) cpr(file i)
 
 (file ovis) casa_ft(file vis, file complist, boolean usescratch=true)
 {
-  wait(vis) {
+  wait(vis, complist) {
     python_persist("import casa; casa.ft('%s', complist='%s', usescratch=bool(%b));" %
                          (filename(vis), filename(complist), usescratch))=>
     ovis=vis;
@@ -70,7 +70,7 @@ app (file o) cpr(file i)
                          string spw="", string calmode="" )
 {
   wait(vis) {
-    wait(gaintable) {
+    wait deep (gaintable) {
       ocal=noop2(python_persist("""
 import os; os.remove('%s');
 import casa;

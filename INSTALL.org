@@ -3,11 +3,14 @@
 
 * Notes
 
-- CASACORE calls the =/bin/sh= command (through /system/ library call
+- CASACORE calls the =/bin/sh= command (through /system/ library call)
   in
   [[file:~/oss/casacore/casa/OS/Directory.cc::String%20command("cp%20-r%20'");]])
   when the /split/ task is invoked. This forces a consistency of glibc
-  between CASA, the system install in /bin and the SWIFT-T build
+  between CASA, the system install in /bin and the SWIFT-T build.
+
+  Note that system(3) does not look through the path for which shell
+  to execute, it is always =/bin/sh=
 
 - CASA has dependencies on libuuid and libSM which are not bundled
   with the distribution
