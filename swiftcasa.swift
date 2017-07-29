@@ -181,6 +181,13 @@ casa.viewer(infile='%s',
        outfile='%s',
        gui=False,
        outformat='png')
+import task_viewer
+task_viewer.ving.done()
+import psutil
+current_process = psutil.Process()
+children = current_process.children(recursive=True)
+for child in children:
+    child.kill()
 """%
    (filename(oplot),
     filename(img)+"/img"+extn,

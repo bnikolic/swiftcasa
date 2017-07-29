@@ -1,6 +1,14 @@
 #+TITLE: Installation/Setup of  SWIFTCASA 
 #+AUTHOR: Bojan Nikolic
 
+* Setup of CASA
+
+- Install the =psutil= package via pip:
+
+  #+BEGIN_SRC 
+  /data/p/casa-release-4.7.2-el7/bin/pip install psutil
+  #+END_SRC
+
 * Notes
 
 - CASACORE calls the =/bin/sh= command (through /system/ library call)
