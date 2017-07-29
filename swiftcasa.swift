@@ -1,6 +1,11 @@
 /* -*- mode: c; -*- */
 /* Main SWIFT module for supporting use of CASA */
 
+/* Rules for binding
+- Always python_persist (CASA loads numpy, which can not be re-initialised)
+- wait [deep] on all file inputs to CASA task (SWIFT/T can not see inside)
+ */
+
 
 import io;
 import python;
