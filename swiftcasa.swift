@@ -164,6 +164,32 @@ casa.clean(vis='%s', imagename='%s/img', niter=%i,
 
 }}
 
+(file oplot) casa_viewer(file img, string extn)
+{
+  wait (img) {
+  oplot=noop2(
+python_persist("""
+f='%s';
+import os; import shutil;
+if(os.path.exists(f)):
+   if (os.path.isdir(f)):
+      shutil.rmtree(f)
+   else:
+      os.remove(f)
+import casa
+casa.viewer(infile='%s',
+       outfile='%s',
+       gui=False,
+       outformat='png')
+"""%
+   (filename(oplot),
+    filename(img)+"/img"+extn,
+    filename(oplot)
+    )));
+  }
+}
+
+
 /* Create a component list with a single component, e.g., for use in
    initialising the calibration process
  */
