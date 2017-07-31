@@ -196,6 +196,19 @@ for child in children:
   }
 }
 
+(string res) casa_vishead(file vis, string hdkey)
+{
+  wait(vis){
+    res=python_persist("""
+import casa;
+r=casa.vishead(vis='%s',
+       hdkey='%s',
+       mode='get');
+""" %
+(filename(vis), hdkey), "repr(r[0]['r1'])");
+  }
+}
+
 
 /* Create a component list with a single component, e.g., for use in
    initialising the calibration process
