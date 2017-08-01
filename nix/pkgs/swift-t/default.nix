@@ -5,7 +5,8 @@
   zsh,
   which, # which is used in the manual autoconf program detect
   zlib, swig, tcl,
-  vim # for the xxd command
+  vim, # for the xxd command
+  perl
 }:
 
 with stdenv.lib;
@@ -27,7 +28,7 @@ in stdenv.mkDerivation rec {
 	sha256 = "168qbhxanlh5chnrc93md03dsnf9piicdqm4pn18pvr6339p3lfz";
   };  
 
-  buildInputs = [autoconf automake jdk ant zsh mpich which zlib swig tcl vim];
+  buildInputs = [autoconf automake jdk ant zsh mpich which zlib swig tcl vim perl];
 
   configurePhase = ''
         cp dev/build/swift-t-settings.sh.template   dev/build/swift-t-settings.sh
