@@ -9,11 +9,14 @@
   /data/p/casa-release-4.7.2-el7/bin/pip install psutil
   #+END_SRC
 
+  (=psutil= is used to end the CASA viewer processes which are spawned
+  when plotting images)
+
 * Known shortcomings with SWIFT/T
 
 1. When using python there appears to be a bug in the optimisations
    with -O2 with current =noop2= function implementation. Recommend
-   only use -O1
+   only use -O1. /I can't currently reproduce this -- recheck/
 
 * Notes
 
