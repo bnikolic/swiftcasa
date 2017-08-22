@@ -58,6 +58,15 @@ app (file o) cpr(file i)
   }
 }
 
+(file ovis) casa_fixvis(file vis, string phasecntr)
+{
+  wait(vis) {
+    python_persist("import casa; casa.fixvis('%s', '%s', phasecenter='%s'); " %
+		   (filename(vis), filename(vis) , phasecntr))=>
+    ovis=vis;
+  }
+}
+
 (file ovis) casa_ft(file vis, file complist, boolean usescratch=true)
 {
   wait(vis, complist) {
@@ -123,9 +132,12 @@ casa.split('%s', '%s', datacolumn='%s', spw='%s');
 }
 
 /* CLEAN has multiple outputs (restored image, clean comps, etc) hence
-   the output is to a directory 
+   the output is to a directory.
+   
+   vis is an array of visibility files to include into clean
 */
-(file oimgdir) casa_clean(file vis, int niter,
+(file oimgdir) casa_clean(file vis[],
+			  int niter,
 			  int imsize[],
 			  string cell,
 			  string spw,
@@ -135,7 +147,7 @@ casa.split('%s', '%s', datacolumn='%s', spw='%s');
 			  string mode="mfs",
 			  int nterms=1)
 {
-  wait(vis) {
+  wait deep (vis) {
   oimgdir=noop2(
 python_persist("""
 f='%s';
@@ -147,7 +159,7 @@ if(os.path.exists(f)):
       os.remove(f)
 os.mkdir(f)
 import casa
-casa.clean(vis='%s', imagename='%s/img', niter=%i,
+casa.clean(vis=%s, imagename='%s/img', niter=%i,
            weighting='%s', robust=%f,
            imsize=[%i,%i],
            cell=['%s'],
@@ -157,7 +169,7 @@ casa.clean(vis='%s', imagename='%s/img', niter=%i,
            mask='%s');
 """%
    (filename(oimgdir),
-    filename(vis),
+    python_filelist(vis),
     filename(oimgdir),
     niter, weighting, robust, imsize[0], imsize[1],
     cell, mode, nterms, spw, mask)));
