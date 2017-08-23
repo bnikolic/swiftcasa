@@ -103,6 +103,33 @@ casa.gaincal('%s', caltable='%s',
   }
 }
 
+(file ocal) casa_bandpass(file vis, file gaintable[],
+			  string bandtype="",
+			  boolean solnorm=false,
+			  float minsnr=1.0 )
+{
+  wait(vis) {
+    wait deep (gaintable) {
+      ocal=noop2(python_persist("""
+import os; os.remove('%s');
+import casa;
+casa.bandpass('%s', caltable='%s',
+              gaintable=%s,
+              bandtype='%s', 
+              minsnr=%f, 
+              solnorm=bool(%b)
+              );
+""" %
+                   (filename(ocal),
+                    filename(vis), filename(ocal),
+                    python_filelist(gaintable),
+                    bandtype, minsnr,
+		    solnorm)));
+    }
+  }
+}
+
+
 (file ovis) casa_applycal(file vis, file gaintable[])
 {
   wait(vis) {
