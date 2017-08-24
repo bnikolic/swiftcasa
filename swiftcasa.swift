@@ -12,6 +12,8 @@ import python;
 import unix;
 import string;
 
+(void a) close_file(file f) "turbine" "0.0.2" "close_file";
+
 app (file o) noop()
 {
   "true" o;
@@ -206,8 +208,8 @@ casa.clean(vis=%s, imagename='%s/img', niter=%i,
 (file oplot) casa_viewer(file img, string extn)
 {
   wait (img) {
-  oplot=noop2(
-python_persist("""
+    file oplot_t=mktemp() =>
+    x=python_persist("""
 f='%s';
 import os; import shutil;
 if(os.path.exists(f)):
@@ -222,16 +224,24 @@ casa.viewer(infile='%s',
        outformat='png')
 import task_viewer
 task_viewer.ving.done()
+# CASA  will always remove the extension and replace with .png
+shutil.move(os.path.splitext(f)[0] + '.png', f)
 import psutil
 current_process = psutil.Process()
 children = current_process.children(recursive=True)
 for child in children:
     child.kill()
+if (not os.path.exists(f)):
+   print f
+   raise ValueError('Output file not found!')
 """%
-   (filename(oplot),
+   (filename(oplot_t),
     filename(img)+"/img"+extn,
-    filename(oplot)
-    )));
+    filename(oplot_t)
+    , "repr(1)"));
+    wait (x) {
+      oplot=oplot_t;
+    }
   }
 }
 
