@@ -285,3 +285,24 @@ cl.close()
                  (filename(omodel), flux, fluxunit, shape, direction, filename(omodel))));
 }
 
+(file ovis) adduvw(file ivis, string calname)
+{
+  wait(ivis)
+  {
+    file ovis_t=mktemp() =>
+    python_persist("import bn_uvconv; bn_uvconv.add_uvw('%s', '%s', '%s')" %
+		   (filename(ivis), filename(ovis) ,calname)) =>
+    ovis=ovis_t;
+  }
+}
+
+(file ovis) cvuvfits(file ivis)
+{
+  wait(ivis)
+  {
+    file ovis_t=mktemp() =>
+    python_persist("import bn_uvconv; bn_uvconv.cvuvfits('%s', '%s')" %
+		   (filename(ivis), filename(ovis))) =>
+    ovis=ovis_t;
+  }
+}
