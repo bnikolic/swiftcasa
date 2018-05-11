@@ -39,6 +39,16 @@ app (file o) cpr(file i)
   o=sprintf("[%s]", join(x, ", "));
 }
 
+(string o) python_intlist(int i[])
+{
+  string x[];
+  foreach v,dx in i
+  {
+    x[dx]=int2string(v);
+  }
+  o=sprintf("[%s]", join(x, ", "));
+}
+
 
 (file vis) casa_importuvfits(file uv)
 {
@@ -148,15 +158,15 @@ casa.applycal('%s',
   }
 }
 
-(file ovis) casa_split(file vis, string datacolumn="corrected", string spw="")
+(file ovis) casa_split(file vis, string datacolumn="corrected", string spw="", string timebin="")
 {
   wait(vis) {
     ovis=noop2(python_persist("""
 import os; os.remove('%s');
 import casa;
-casa.split('%s', '%s', datacolumn='%s', spw='%s');
+casa.split('%s', '%s', datacolumn='%s', spw='%s', timebin='');
 """ % (filename(ovis), filename(vis),
-       filename(ovis), datacolumn, spw)));
+       filename(ovis), datacolumn, spw, timebin)));
   }
 }
 
@@ -258,6 +268,26 @@ r=casa.vishead(vis='%s',
   }
 }
 
+(file ofits)  casa_exportfits(file infits)
+{
+  wait(infits){
+    file ofits_t=mktemp() =>
+    python_persist("""
+f='%s';
+import os; import shutil;
+if(os.path.exists(f)):
+   if (os.path.isdir(f)):
+      shutil.rmtree(f)
+   else:
+      os.remove(f)
+import casa;
+r=casa.exportfits('%s','%s');
+""" %
+		   (filename(ofits_t), filename(infits), filename(ofits_t))) =>
+    ofits=ofits_t;
+  }
+}
+
 
 /* Create a component list with a single component, e.g., for use in
    initialising the calibration process
@@ -290,7 +320,7 @@ cl.close()
   wait(ivis)
   {
     file ovis_t=mktemp() =>
-    python_persist("import bn_uvconv; bn_uvconv.add_uvw('%s', '%s', '%s')" %
+    python_persist("import heracasa.data.uvconv as uvconv; uvconv.add_uvw('%s', '%s', '%s')" %
 		   (filename(ivis), filename(ovis) ,calname)) =>
     ovis=ovis_t;
   }
@@ -301,8 +331,9 @@ cl.close()
   wait(ivis)
   {
     file ovis_t=mktemp() =>
-    python_persist("import bn_uvconv; bn_uvconv.cvuvfits('%s', '%s')" %
+    python_persist("import heracasa.data.uvconv as uvconv; uvconv.cvuvfits('%s', '%s')" %
 		   (filename(ivis), filename(ovis))) =>
     ovis=ovis_t;
   }
 }
+

@@ -3,6 +3,7 @@
 
 * Setup of CASA
 
+
 - Install the =psutil= package via pip:
 
   #+BEGIN_SRC 
@@ -11,6 +12,17 @@
 
   (=psutil= is used to end the CASA viewer processes which are spawned
   when plotting images)
+
+* Running
+
+Note: SWIFT/T combined with CASA can open very many files. Set a
+higher limit with:
+
+#+BEGIN_SRC bash
+ulimit -n 10000
+#+END_SRC
+
+
 
 * Known shortcomings with SWIFT/T
 
